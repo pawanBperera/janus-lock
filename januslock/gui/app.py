@@ -11,6 +11,9 @@ from pathlib import Path
 
 from januslock import storage
 
+from januslock import storage
+from januslock.gui import theme
+
 
 class JanusLockApp:
     def __init__(self, root: tk.Tk) -> None:
@@ -18,6 +21,8 @@ class JanusLockApp:
         self.root.title("Janus Lock")
         self.root.geometry("640x480")
         self.root.minsize(480, 360)
+
+        theme.apply(self.root)
 
         # --- State ---
         # These three only exist while a vault is unlocked.
