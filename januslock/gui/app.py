@@ -1,5 +1,5 @@
 """
-gui.py — Tkinter front-end for Janus Lock.
+app.py — Tkinter front-end for Janus Lock.
 
 This module is intentionally thin: it wires widgets to the same
 functions the CLI uses. No crypto or file logic lives here.
