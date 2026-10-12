@@ -20,9 +20,12 @@ class JanusLockApp:
         self.root = root
         self.root.title("Janus Lock")
         self.root.geometry("640x480")
-        self.root.minsize(480, 360)
+        self.root.minsize(640, 400)
 
         theme.apply(self.root)
+        self._center_window()
+
+
 
         # --- State ---
         # These three only exist while a vault is unlocked.
@@ -32,6 +35,25 @@ class JanusLockApp:
         self.salt: bytes | None = None
 
         self._build_ui()
+
+
+
+
+    #-------------------------------------
+
+    def _center_window(self) -> None:
+        """Center the window on the primary display at startup."""
+        self.root.update_idletasks()
+
+        win_w = self.root.winfo_width()
+        win_h = self.root.winfo_height()
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+
+        x = (screen_w - win_w) // 2
+        y = (screen_h - win_h) // 2
+
+        self.root.geometry(f"+{x}+{y}")
 
     # ---------- UI construction ----------
 
