@@ -79,15 +79,24 @@ class JanusLockApp:
         )
 
         # --- Text area (row 1, expands) ---
-        self.text = tk.Text(self.root, wrap="word", undo=True, font=("Consolas", 11))
-        self.text.grid(
+        # A Frame holds the Text and its Scrollbar side by side.
+        editor = ttk.Frame(self.root)
+        editor.grid(
             row=1,
             column=0,
             sticky="nsew",
             padx=theme.PAD["md"],
             pady=(0, theme.PAD["md"]),
         )
-        self.text.configure(state=tk.DISABLED)
+        editor.grid_rowconfigure(0, weight=1)
+        editor.grid_columnconfigure(0, weight=1)
+
+        self.text = tk.Text(editor, wrap="word", undo=True, font=("Consolas", 11))
+        self.text.grid(row=0, column=0, sticky="nsew")
+
+        scrollbar = ttk.Scrollbar(editor, orient=tk.VERTICAL, command=self.text.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        self.text.configure(yscrollcommand=scrollbar.set, state=tk.DISABLED)
 
         # --- Status bar (row 2) ---
         self.status = tk.StringVar(
