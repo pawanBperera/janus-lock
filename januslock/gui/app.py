@@ -36,24 +36,50 @@ class JanusLockApp:
     # ---------- UI construction ----------
 
     def _build_ui(self) -> None:
-        # Top toolbar: the buttons users see first.
-        toolbar = ttk.Frame(self.root, padding=8)
-        toolbar.pack(side=tk.TOP, fill=tk.X)
+        # Root grid: 3 rows. Row 1 (text area) gets all the extra
+        # vertical space; toolbar and status bar stay at natural height.
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
-        ttk.Button(toolbar, text="New Vault", command=self.on_new).pack(side=tk.LEFT)
-        ttk.Button(toolbar, text="Open Vault", command=self.on_open).pack(side=tk.LEFT, padx=(6, 0))
-        ttk.Button(toolbar, text="Save", command=self.on_save).pack(side=tk.LEFT, padx=(6, 0))
-        ttk.Button(toolbar, text="Lock", command=self.on_lock).pack(side=tk.LEFT, padx=(6, 0))
+        # --- Toolbar (row 0) ---
+        toolbar = ttk.Frame(self.root, padding=theme.PAD["md"])
+        toolbar.grid(row=0, column=0, sticky="ew")
 
-        # Status bar at the bottom: tells the user what's going on.
-        self.status = tk.StringVar(value="No vault open. Create one or open an existing vault.")
-        status_bar = ttk.Label(self.root, textvariable=self.status, anchor="w", padding=(8, 4))
-        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        ttk.Button(toolbar, text="New Vault", command=self.on_new).pack(
+            side=tk.LEFT
+        )
+        ttk.Button(toolbar, text="Open Vault", command=self.on_open).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
+        ttk.Button(toolbar, text="Save", command=self.on_save).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
+        ttk.Button(toolbar, text="Lock", command=self.on_lock).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
 
-        # Main text area: this is where the vault contents live.
+        # --- Text area (row 1, expands) ---
         self.text = tk.Text(self.root, wrap="word", undo=True, font=("Consolas", 11))
-        self.text.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
-        self.text.configure(state=tk.DISABLED)  # disabled until a vault is unlocked
+        self.text.grid(
+            row=1,
+            column=0,
+            sticky="nsew",
+            padx=theme.PAD["md"],
+            pady=(0, theme.PAD["md"]),
+        )
+        self.text.configure(state=tk.DISABLED)
+
+        # --- Status bar (row 2) ---
+        self.status = tk.StringVar(
+            value="No vault open. Create one or open an existing vault."
+        )
+        status_bar = ttk.Label(
+            self.root,
+            textvariable=self.status,
+            anchor="w",
+            padding=(theme.PAD["md"], theme.PAD["sm"]),
+        )
+        status_bar.grid(row=2, column=0, sticky="ew")
 
     # ---------- helpers ----------
 
