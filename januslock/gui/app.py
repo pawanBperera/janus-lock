@@ -10,8 +10,6 @@ from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 
 from januslock import storage
-
-from januslock import storage
 from januslock.gui import theme
 
 
