@@ -12,16 +12,25 @@ from pathlib import Path
 from januslock import storage
 from januslock.gui import theme
 
+# --- Paths ---
+# Project root = three levels up from this file:
+# januslock/gui/app.py → januslock/gui → januslock → repo root
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+ICON_PATH = _PROJECT_ROOT / "assets" / "favicon.ico"
 
 class JanusLockApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Janus Lock")
+        self._apply_icon()
         self.root.geometry("640x480")
         self.root.minsize(640, 400)
 
         theme.apply(self.root)
         self._center_window()
+
+
+
 
 
 
@@ -34,10 +43,7 @@ class JanusLockApp:
 
         self._build_ui()
 
-
-
-
-    #-------------------------------------
+    # ---------- window placement ----------
 
     def _center_window(self) -> None:
         """Center the window on the primary display at startup."""
@@ -53,6 +59,19 @@ class JanusLockApp:
 
         self.root.geometry(f"+{x}+{y}")
 
+    def _apply_icon(self) -> None:
+        """Set the window icon if the .ico file exists.
+
+        Silently skips on non-Windows platforms or if the file is
+        missing — an icon is a nicety, not a startup requirement.
+        """
+        if not ICON_PATH.exists():
+            return
+        try:
+            self.root.iconbitmap(default=str(ICON_PATH))
+        except tk.TclError:
+            # Not Windows, or the .ico is malformed.
+            pass
     # ---------- UI construction ----------
 
     def _build_ui(self) -> None:
