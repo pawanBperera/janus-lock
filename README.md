@@ -2,9 +2,11 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-educational-orange)
 
+See [CHANGELOG.md](CHANGELOG.md) for version history.
 
+![Janus Lock v0.1.1](docs/screenshots/v0.1.1-window.png)
 
-![v1GUI.png](v1GUI.png)
+*v0.1.1 — see [the pre-polish version](docs/screenshots/v0.1.0-window.png) for comparison.*
 
 ## How it works
 

@@ -1,5 +1,5 @@
 """
-gui.py — Tkinter front-end for Janus Lock.
+app.py — Tkinter front-end for Janus Lock.
 
 This module is intentionally thin: it wires widgets to the same
 functions the CLI uses. No crypto or file logic lives here.
@@ -10,14 +10,29 @@ from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 
 from januslock import storage
+from januslock.gui import theme
 
+# --- Paths ---
+# Project root = three levels up from this file:
+# januslock/gui/app.py → januslock/gui → januslock → repo root
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+ICON_PATH = _PROJECT_ROOT / "assets" / "favicon.ico"
 
 class JanusLockApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Janus Lock")
+        self._apply_icon()
         self.root.geometry("640x480")
-        self.root.minsize(480, 360)
+        self.root.minsize(640, 400)
+
+        theme.apply(self.root)
+        self._center_window()
+
+
+
+
+
 
         # --- State ---
         # These three only exist while a vault is unlocked.
@@ -28,27 +43,91 @@ class JanusLockApp:
 
         self._build_ui()
 
+    # ---------- window placement ----------
+
+    def _center_window(self) -> None:
+        """Center the window on the primary display at startup."""
+        self.root.update_idletasks()
+
+        win_w = self.root.winfo_width()
+        win_h = self.root.winfo_height()
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+
+        x = (screen_w - win_w) // 2
+        y = (screen_h - win_h) // 2
+
+        self.root.geometry(f"+{x}+{y}")
+
+    def _apply_icon(self) -> None:
+        """Set the window icon if the .ico file exists.
+
+        Silently skips on non-Windows platforms or if the file is
+        missing — an icon is a nicety, not a startup requirement.
+        """
+        if not ICON_PATH.exists():
+            return
+        try:
+            self.root.iconbitmap(default=str(ICON_PATH))
+        except tk.TclError:
+            # Not Windows, or the .ico is malformed.
+            pass
     # ---------- UI construction ----------
 
     def _build_ui(self) -> None:
-        # Top toolbar: the buttons users see first.
-        toolbar = ttk.Frame(self.root, padding=8)
-        toolbar.pack(side=tk.TOP, fill=tk.X)
+        # Root grid: 3 rows. Row 1 (text area) gets all the extra
+        # vertical space; toolbar and status bar stay at natural height.
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
-        ttk.Button(toolbar, text="New Vault", command=self.on_new).pack(side=tk.LEFT)
-        ttk.Button(toolbar, text="Open Vault", command=self.on_open).pack(side=tk.LEFT, padx=(6, 0))
-        ttk.Button(toolbar, text="Save", command=self.on_save).pack(side=tk.LEFT, padx=(6, 0))
-        ttk.Button(toolbar, text="Lock", command=self.on_lock).pack(side=tk.LEFT, padx=(6, 0))
+        # --- Toolbar (row 0) ---
+        toolbar = ttk.Frame(self.root, padding=theme.PAD["md"])
+        toolbar.grid(row=0, column=0, sticky="ew")
 
-        # Status bar at the bottom: tells the user what's going on.
-        self.status = tk.StringVar(value="No vault open. Create one or open an existing vault.")
-        status_bar = ttk.Label(self.root, textvariable=self.status, anchor="w", padding=(8, 4))
-        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        ttk.Button(toolbar, text="New Vault", command=self.on_new).pack(
+            side=tk.LEFT
+        )
+        ttk.Button(toolbar, text="Open Vault", command=self.on_open).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
+        ttk.Button(toolbar, text="Save", command=self.on_save).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
+        ttk.Button(toolbar, text="Lock", command=self.on_lock).pack(
+            side=tk.LEFT, padx=(theme.PAD["sm"], 0)
+        )
 
-        # Main text area: this is where the vault contents live.
-        self.text = tk.Text(self.root, wrap="word", undo=True, font=("Consolas", 11))
-        self.text.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
-        self.text.configure(state=tk.DISABLED)  # disabled until a vault is unlocked
+        # --- Text area (row 1, expands) ---
+        # A Frame holds the Text and its Scrollbar side by side.
+        editor = ttk.Frame(self.root)
+        editor.grid(
+            row=1,
+            column=0,
+            sticky="nsew",
+            padx=theme.PAD["md"],
+            pady=(0, theme.PAD["md"]),
+        )
+        editor.grid_rowconfigure(0, weight=1)
+        editor.grid_columnconfigure(0, weight=1)
+
+        self.text = tk.Text(editor, wrap="word", undo=True, font=("Consolas", 11))
+        self.text.grid(row=0, column=0, sticky="nsew")
+
+        scrollbar = ttk.Scrollbar(editor, orient=tk.VERTICAL, command=self.text.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        self.text.configure(yscrollcommand=scrollbar.set, state=tk.DISABLED)
+
+        # --- Status bar (row 2) ---
+        self.status = tk.StringVar(
+            value="No vault open. Create one or open an existing vault."
+        )
+        status_bar = ttk.Label(
+            self.root,
+            textvariable=self.status,
+            anchor="w",
+            padding=(theme.PAD["md"], theme.PAD["sm"]),
+        )
+        status_bar.grid(row=2, column=0, sticky="ew")
 
     # ---------- helpers ----------
 
